@@ -97,8 +97,6 @@ def pollForResponse(dmid):
         response = urllib.request.urlopen("https://www.codewars.com/api/v1/deferred/" + dmid).read().decode("utf-8")
         response = json.loads(response)
 
-        prettyPrint(response)
-
         try:
             if response["success"]:
                 break
