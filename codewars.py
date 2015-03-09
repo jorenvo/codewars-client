@@ -21,6 +21,7 @@ import sys
 import json
 import pprint
 import argparse
+from time import sleep
 
 challengeIdsFileName = ".current_challenge_ids"
 
@@ -30,6 +31,7 @@ def parseArguments():
     parser.add_argument("-s", "--solution-file", help = "file containing the solution (default: %(default)s)", default = "solution.js")
     parser.add_argument("-t", "--tests-file", help = "file containing the tests (default: %(default)s)", default = "tests.js")
     parser.add_argument("-k", "--api-key-file", help = "file containing codewars.com api key (default: %(default)s)", default = "api_key.txt")
+    parser.add_argument("-e", "--evaluation-file", help = "file containing the response after submitting (default: %(default)s)", default = "evaluation.html")
     parser.add_argument("action", choices = ["next", "submit", "finalize"], help = "next: setup the next kata, submit: attempt solution, finalize: finalize last submitted solution")
     args = parser.parse_args()
 
@@ -88,13 +90,46 @@ def nextKata():
 
     print("Set up kata \"" + response["name"] + "\"")
 
+def pollForResponse(dmid):
+    response = None
+
+    while True:
+        response = urllib.request.urlopen("https://www.codewars.com/api/v1/deferred/" + dmid).read().decode("utf-8")
+        response = json.loads(response)
+
+        prettyPrint(response)
+
+        try:
+            if response["success"]:
+                break
+        # while codewars is evaluating the solution the json will not contain success at all
+        except KeyError:
+            pass
+
+        sleep(2)
+
+    writeStringToFile(arguments.evaluation_file, response["output"][0])
+
+    print("Solution was evaluated and ", end="")
+
+    if response["valid"]:
+        print("passed.")
+    else:
+        print("failed with reason:\n" + response["reason"])
+
+    print("Summary: " + str(response["summary"]["errors"]) + " errors, " + str(response["summary"]["failed"]) + " failed, " + str(response["summary"]["passed"]) + " passed")
+
+    print("Additional output was written to " + arguments.evaluation_file + ".")
+
 def submitKata():
     challengeIds = readChallengeIds()
     prettyPrint(challengeIds)
 
-    response = doPost("http://www.codewars.com/api/v1/code-challenges/projects/" + challengeIds["projectId"] + "/solutions/" + challengeIds["solutionId"] + "/attempt",
+    response = doPost("https://www.codewars.com/api/v1/code-challenges/projects/" + challengeIds["projectId"] + "/solutions/" + challengeIds["solutionId"] + "/attempt",
                       {"code": readFile(arguments.solution_file)})
     prettyPrint(response)
+
+    pollForResponse(response["dmid"])
 
 arguments = parseArguments()
 apikey = readFile(arguments.api_key_file)
