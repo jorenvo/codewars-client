@@ -1,0 +1,35 @@
+* codewars
+A python script that provides a cli interface to [[http://www.codewars.com][codewars.com]]. Because
+noone should have to write code in a browser.
+** Requirements
+- Python 3
+** Usage
+#+BEGIN_SRC bash
+usage: codewars.py [-h] [-d DESCRIPTION_FILE] [-s SOLUTION_FILE] [-t TESTS_FILE] [-k API_KEY_FILE] [-e EVALUATION_FILE] {next,submit,finalize}
+
+Provides users with a way of using codewars.com without having to use a browser to do their programming in.
+
+positional arguments:
+  {next,submit,finalize}
+                        next: setup the next kata, submit: attempt solution, finalize: finalize last submitted solution
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DESCRIPTION_FILE, --description-file DESCRIPTION_FILE
+                        file containing the description (default: description.html)
+  -s SOLUTION_FILE, --solution-file SOLUTION_FILE
+                        file containing the solution (default: solution.js)
+  -t TESTS_FILE, --tests-file TESTS_FILE
+                        file containing the tests (default: tests.js)
+  -k API_KEY_FILE, --api-key-file API_KEY_FILE
+                        file containing codewars.com api key (default: api_key.txt)
+  -e EVALUATION_FILE, --evaluation-file EVALUATION_FILE
+                        file containing the response after submitting (default: evaluation.html)
+#+END_SRC
+** Notes
+Getting next katas and submitting works. Finalizing is something that
+still needs to be done. Something that I'd first like to fix though is
+setting up a proper TDD environment with Mocha. Maybe even provide a
+layer so that codewars' custom Test framework would run locally. This
+way the tests (or fixtures as codewars call them) could be directly
+run by the user.
