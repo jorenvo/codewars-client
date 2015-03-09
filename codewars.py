@@ -22,13 +22,15 @@ import json
 import pprint
 import argparse
 
+challengeIdsFileName = ".current_challenge_ids"
+
 def parseArguments():
     parser = argparse.ArgumentParser(description = "Provides users with a way of using codewars.com without having to use a browser to do their programming in.")
     parser.add_argument("-d", "--description-file", help = "file containing the description (default: %(default)s)", default = "description.html")
     parser.add_argument("-s", "--solution-file", help = "file containing the solution (default: %(default)s)", default = "solution.js")
     parser.add_argument("-t", "--tests-file", help = "file containing the tests (default: %(default)s)", default = "tests.js")
     parser.add_argument("-k", "--api-key-file", help = "file containing codewars.com api key (default: %(default)s)", default = "api_key.txt")
-    parser.add_argument("action", choices = ["next", "submit"], help = "next: setup the next kata, submit: attempt solution")
+    parser.add_argument("action", choices = ["next", "submit", "finalize"], help = "next: setup the next kata, submit: attempt solution, finalize: finalize last submitted solution")
     args = parser.parse_args()
 
     return(args)
@@ -45,13 +47,20 @@ def writeStringToFile(filename, string):
     print(string, end="", file=f)
     f.close()
 
+def readChallengeIds():
+    contents = readFile(challengeIdsFileName).split("\n")
+
+    return({"projectId": contents[0],
+            "solutionId": contents[1]})
+
 def prettyPrint(obj):
     pp = pprint.PrettyPrinter(indent = 4)
     pp.pprint(obj)
 
-def doPost(url, headers, data):
-    data = urllib.parse.urlencode(values)
+def doPost(url, data = {}):
+    data = urllib.parse.urlencode(data)
     data = data.encode("utf-8")
+    headers = {'Authorization': apikey}
 
     req = urllib.request.Request(url, data, headers)
 
@@ -65,19 +74,27 @@ def doPost(url, headers, data):
     return(response)
 
 def nextKata():
-    # response = doPost("https://www.codewars.com/api/v1/code-challenges/javascript/train",
-    #                   {'Authorization': apikey},
-    #                   {'peek': 'false'});
+    response = doPost("https://www.codewars.com/api/v1/code-challenges/javascript/train");
 
-    response = open('test.json', 'r').read()
-    jsonified = json.loads(response)
+    ## TEST START ##
+    # response = open('test.json', 'r').read()
+    # jsonified = json.loads(response)
+    ## TEST END ##
 
-    writeStringToFile(arguments.description_file, jsonified["description"])
-    writeStringToFile(arguments.tests_file, jsonified["session"]["exampleFixture"])
-    writeStringToFile(arguments.solution_file, jsonified["session"]["setup"])
-    writeStringToFile(".current_challenge_ids", jsonified["session"]["projectId"] + "\n" + jsonified["session"]["solutionId"])
+    writeStringToFile(arguments.description_file, response["description"])
+    writeStringToFile(arguments.tests_file, response["session"]["exampleFixture"])
+    writeStringToFile(arguments.solution_file, response["session"]["setup"])
+    writeStringToFile(challengeIdsFileName, response["session"]["projectId"] + "\n" + response["session"]["solutionId"])
 
-    print("Set up kata \"" + jsonified["name"] + "\"")
+    print("Set up kata \"" + response["name"] + "\"")
+
+def submitKata():
+    challengeIds = readChallengeIds()
+    prettyPrint(challengeIds)
+
+    response = doPost("http://www.codewars.com/api/v1/code-challenges/projects/" + challengeIds["projectId"] + "/solutions/" + challengeIds["solutionId"] + "/attempt",
+                      {"code": readFile(arguments.solution_file)})
+    prettyPrint(response)
 
 arguments = parseArguments()
 apikey = readFile(arguments.api_key_file)
@@ -85,7 +102,10 @@ apikey = readFile(arguments.api_key_file)
 if arguments.action == "next":
     nextKata()
 elif arguments.action == "submit":
-    print("def")
+    submitKata()
+elif arguments.action == "finalize":
+    finalizeKata()
+
 # response = urllib.request.urlopen("https://www.codewars.com/api/v1/code-challenges/5277c8a221e209d3f6000b56").read().decode("utf-8")
 # jsonified = json.loads(response)
 # prettyPrint(jsonified)
