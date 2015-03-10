@@ -142,15 +142,20 @@ def pollForResponse(dmid):
 
     print("Additional output was written to " + arguments.evaluation_file + ".")
 
-def submitKata():
+def submitKata(finalize):
     challengeIds = readChallengeIds()
-    prettyPrint(challengeIds)
+    url = "https://www.codewars.com/api/v1/code-challenges/projects/" + challengeIds["projectId"] + "/solutions/" + challengeIds["solutionId"] + "/"
 
-    response = doPost("https://www.codewars.com/api/v1/code-challenges/projects/" + challengeIds["projectId"] + "/solutions/" + challengeIds["solutionId"] + "/attempt",
-                      {"code": readFile(arguments.solution_file)})
+    if finalize:
+        url += "finalize"
+    else:
+        url += "attempt"
+
+    response = doPost(url, {"code": readFile(arguments.solution_file)})
     prettyPrint(response)
 
-    pollForResponse(response["dmid"])
+    if not finalize:
+        pollForResponse(response["dmid"])
 
 arguments = parseArguments()
 apikey = readFile(arguments.api_key_file)
@@ -158,14 +163,6 @@ apikey = readFile(arguments.api_key_file)
 if arguments.action == "next":
     nextKata()
 elif arguments.action == "submit":
-    submitKata()
+    submitKata(False)
 elif arguments.action == "finalize":
-    finalizeKata()
-
-# response = urllib.request.urlopen("https://www.codewars.com/api/v1/code-challenges/5277c8a221e209d3f6000b56").read().decode("utf-8")
-# jsonified = json.loads(response)
-# prettyPrint(jsonified)
-
-# 1. start next challenge (description: description.html) (project_id + solution_id: current_challenge_id.txt) (./codewars.py next)
-# 2. write code (solution.js)
-# 3. submit answer (+ poll) (needs challenge id) (./codewars.py submit solution.js)
+    submitKata(True)
