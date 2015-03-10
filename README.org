@@ -21,15 +21,15 @@ Basic process comes down to:
 3. Attempt solution with: =$ codewars.py submit=
 4. If it passes, finalize with: =$ codewars.py finalize=
 *** Tests
-One of the nice things about codewars is that it encourages a TDD
-environment. It does this by providing some tests to start out with
-(called 'example fixtures' by codewars) and by providing the user with
-an easy way to run them in the browser. Ofcourse we're not using the
-browser so that's a problem. In order to run the tests codewars-cli
-provides some help to run the tests locally with Mocha. It adds a
-preamble to the tests and it converts codewars' Test.* calls to Nodejs
-Assert.* calls. This translation does not provide perfectly equivalent
-tests, but it should be good enough for this purpose.
+One of the nice things about codewars is that it encourages TDD. It
+does this by providing some tests to start out with (called 'example
+fixtures' by codewars) and by providing the user with an easy way to
+run them in the browser. Ofcourse we're not using the browser so
+that's a problem. In order to run the tests codewars-cli provides some
+help to run the tests locally with Mocha. It adds a preamble to the
+tests and it converts codewars' Test.* calls to Nodejs Assert.*
+calls. This translation does not provide perfectly equivalent tests,
+but it should be good enough for this purpose.
 
 The only other thing that needs to be done is exporting the necessary
 functions in the solutions file. This can easily be done by appending:
