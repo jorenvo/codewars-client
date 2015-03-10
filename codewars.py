@@ -75,18 +75,41 @@ def doPost(url, data = {}):
     response = json.loads(response)
     return(response)
 
+# This prepends some preamble and converts the codewars' tests to
+# mocha compatible tests that use nodejs' Assert
+# http://www.codewars.com/docs/js-slash-coffeescript-test-reference
+# https://nodejs.org/api/assert.html#assert_assert_equal_actual_expected_message
+def makeTestsCompatibleWithMocha(tests):
+    # var assert = require("assert");
+    # var exported = require("./solution.js");
+    tests = "\
+var assert = require(\"assert\");\n\
+var kata = require(\"./" + arguments.solution_file + "\");\n\n" + tests
+
+    tests = tests.replace("Test.assertEquals", "assert.strictEqual")
+    tests = tests.replace("Test.assertNotEquals", "assert.notStrictEqual")
+    tests = tests.replace("Test.assertNotEquals", "assert.notStrictEqual")
+    tests = tests.replace("Test.assertSimilar", "assert.equal") # not really the same. Test.assertSimilar does toString and then ===
+    tests = tests.replace("Test.assertNotSimilar", "assert.notEqual")
+    tests = tests.replace("Test.expectError", "assert.throws") # not perfect either because assert.throws expects (block[, error][, message])
+    tests = tests.replace("Test.expectNoError", "assert.doesNotThrow")
+
+    return(tests)
+
 def nextKata():
     response = doPost("https://www.codewars.com/api/v1/code-challenges/javascript/train");
 
     ## TEST START ##
     # response = open('test.json', 'r').read()
-    # jsonified = json.loads(response)
+    # response = json.loads(response)
     ## TEST END ##
 
     writeStringToFile(arguments.description_file, response["description"])
-    writeStringToFile(arguments.tests_file, response["session"]["exampleFixture"])
     writeStringToFile(arguments.solution_file, response["session"]["setup"])
     writeStringToFile(challengeIdsFileName, response["session"]["projectId"] + "\n" + response["session"]["solutionId"])
+
+    mochaTests = makeTestsCompatibleWithMocha(response["session"]["exampleFixture"])
+    writeStringToFile(arguments.tests_file, mochaTests)
 
     print("Set up kata \"" + response["name"] + "\"")
 
