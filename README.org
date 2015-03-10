@@ -1,15 +1,25 @@
 * codewars
 A python script that provides a cli interface to [[http://www.codewars.com][codewars.com]]. Because
-noone should have to write code in a browser. Currently focuses on
-JavaScript alone.
+noone should have to write code in a browser. Currently focuses only
+on JavaScript katas.
 ** Requirements
 - Python 3
 - [[http://mochajs.org/][Mocha]] (optional: for running the tests locally)
 ** Usage
 For basic information on how to use the program run:
 #+BEGIN_SRC bash
-codewars.py -h
+$ codewars.py -h
 #+END_SRC
+*** Setup
+Create a file that contains your personal api key. You can find this
+key in 'Account settings' on codewars. By default, codewars-client
+looks for a file called =api_key.txt= in the current directory.
+*** Basic
+Basic process comes down to:
+1. Get new kata with: =$ codewars.py next=
+2. Write code and tests
+3. Attempt solution with: =$ codewars.py submit=
+4. If it passes, finalize with: =$ codewars.py finalize=
 *** Tests
 One of the nice things about codewars is that it encourages a TDD
 environment. It does this by providing some tests to start out with
@@ -27,5 +37,19 @@ functions in the solutions file. This can easily be done by appending:
 module.exports.some_function = some_function
 #+END_SRC
 to the solution file.
-** Notes
-Finalizing still needs to be implemented.
+
+Tests can then be run with:
+#+BEGIN_EXAMPLE
+$ mocha tests.js
+  removeValue
+    ✓ should remove integers
+    ✓ should remove all integers
+    ✓ should return false when no integer can be removed
+    ✓ should remove strings
+    ✓ should return false when no string can be removed
+    ✓ should not confuse strings with integers
+    ✓ should return false when the array is empty
+
+
+  7 passing (17ms)
+#+END_EXAMPLE
