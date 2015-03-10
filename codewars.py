@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2014 Joren Van Onder
+# Copyright 2015 Joren Van Onder
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
